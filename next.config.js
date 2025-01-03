@@ -8,15 +8,15 @@ const nextConfig = {
 const withMDX = createMDX({
   options: {
     remarkPlugins: [
-      "remark-math",
-      "remark-gfm"
+      ["remark-math", {}],
+      ["remark-gfm", {}]
     ],
     rehypePlugins: [
       ["rehype-prism-plus", {
         ignoreMissing: true,
         showLineNumbers: true
       }],
-      "rehype-katex"
+      ["rehype-katex", {}]
     ]
   }
 })
