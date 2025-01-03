@@ -426,3 +426,45 @@ td:last-child {
   text-decoration: line-through;
   opacity: 0.7;
 }
+
+/* Blog post listing */
+.blog-post-card {
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  padding: 0.75rem;
+  transition: background-color 0.2s ease;
+}
+
+.blog-post-card:hover {
+  background-color: var(--primary-transparent);
+}
+
+.blog-post-card a:hover {
+  text-decoration: none;
+}
+
+.blog-post-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+  line-height: 1.2;
+  margin-bottom: 0.15rem;
+}
+
+.blog-post-card:hover .blog-post-title {
+  color: var(--primary);
+}
+
+.blog-post-meta {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin-top: 0;
+  margin-bottom: 0.15rem;
+  line-height: 1.2;
+}
+
+.blog-post-description {
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0;
+  line-height: 1.3;
+}
