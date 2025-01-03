@@ -5,10 +5,8 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
-interface PostProps {
-  params: {
-    slug: string
-  }
+interface PostPropsAsync {
+    params: Promise<{slug: string}>
 }
 
 // Generate static params for all posts at build time
@@ -20,8 +18,9 @@ export function generateStaticParams() {
 }
 
 // Generate metadata for each post
-export function generateMetadata({ params }: PostProps) {
-  const post = getPostBySlug(params.slug)
+export async function generateMetadata({ params }: PostPropsAsync) {
+    const awaited = await params;
+  const post = getPostBySlug(awaited.slug)
   
   if (!post) {
     return {
@@ -30,7 +29,7 @@ export function generateMetadata({ params }: PostProps) {
   }
 
   return {
-    title: post.frontmatter.title || params.slug
+    title: post.frontmatter.title || awaited.slug
   }
 }
 
@@ -42,13 +41,14 @@ function getPostBySlug(slug: string) {
     const fileContents = fs.readFileSync(fullPath, 'utf8')
     const { content, data: frontmatter } = matter(fileContents)
     return { content, frontmatter }
-  } catch (e) {
+  } catch {
     return null
   }
 }
 
-export default function Post({ params }: PostProps) {
-  const post = getPostBySlug(params.slug)
+export default async function Post({ params }: PostPropsAsync) {
+    const awaited = await params;
+  const post = getPostBySlug(awaited.slug)
   
   if (!post) {
     notFound()
