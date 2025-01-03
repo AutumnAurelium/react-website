@@ -11,7 +11,16 @@ export default {
     extend: {
       colors: {
         background: "var(--background)",
+        'background-dark': "var(--background-dark)",
         foreground: "var(--foreground)",
+        primary: "var(--primary)",
+        'primary-light': "var(--primary-light)",
+        'primary-transparent': "var(--primary-transparent)",
+        secondary: "var(--secondary)",
+      },
+      fontFamily: {
+        primary: "var(--font-primary)",
+        mono: "var(--font-mono)",
       },
     },
   },
