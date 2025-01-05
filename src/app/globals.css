@@ -163,6 +163,8 @@ p a:hover {
   width: 24px;
   height: 24px;
   transform: translateY(1px);
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .nav-link {
