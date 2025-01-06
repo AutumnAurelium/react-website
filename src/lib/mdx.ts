@@ -1,22 +1,23 @@
 import fs from 'fs'
 import path from 'path'
-import matter from 'gray-matter'
 
 const postsDirectory = path.join(process.cwd(), 'src/app/blog/posts')
 
-export function getAllPosts() {
-  const files = fs.readdirSync(postsDirectory)
-  
-  return files
-    .filter(file => /\.mdx$/.test(file))
-    .map(fileName => {
-      const fullPath = path.join(postsDirectory, fileName)
-      const fileContents = fs.readFileSync(fullPath, 'utf8')
-      const { data } = matter(fileContents)
-      
-      return {
-        slug: fileName.replace(/\.mdx$/, ''),
-        ...data,
-      }
-    })
+export async function getAllPosts() {
+  const files = fs.readdirSync(postsDirectory);
+
+  const posts = [];
+
+  for(const filename of files) {
+    const slug = filename.replace(/\.mdx$/, '');
+
+    const postModule = (await import(`../app/blog/posts/${slug}.mdx`));
+
+    posts.push({
+      slug: slug,
+      ...postModule.metadata,
+    });
+  }
+
+  return posts;
 } 
