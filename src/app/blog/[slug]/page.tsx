@@ -20,7 +20,7 @@ export function generateStaticParams() {
 // Generate metadata for each post
 export async function generateMetadata({ params }: PostPropsAsync) {
     const awaited = await params;
-  const post = getPostBySlug(awaited.slug)
+  const post = await getPostBySlug(awaited.slug)
   
   if (!post) {
     return {
@@ -29,41 +29,40 @@ export async function generateMetadata({ params }: PostPropsAsync) {
   }
 
   return {
-    title: post.frontmatter.title || awaited.slug
+    title: post.metadata.title || awaited.slug
   }
 }
 
-function getPostBySlug(slug: string) {
-  const postsDirectory = path.join(process.cwd(), 'src/app/blog/posts')
-  const fullPath = path.join(postsDirectory, `${slug}.mdx`)
-  
+async function getPostBySlug(slug: string) {
   try {
-    const fileContents = fs.readFileSync(fullPath, 'utf8')
-    const { content, data: frontmatter } = matter(fileContents)
-    return { content, frontmatter }
+    const postModule = (await import(`../posts/${slug}.mdx`));
+    const Content = postModule.default;
+
+    return { content: Content, metadata: postModule.metadata }
   } catch {
-    return null
+    return null;
   }
 }
 
 export default async function Post({ params }: PostPropsAsync) {
-    const awaited = await params;
-  const post = getPostBySlug(awaited.slug)
-  
-  if (!post) {
-    notFound()
+  const awaited = await params;
+  const post = await getPostBySlug(awaited.slug);
+
+  if(!post) {
+    notFound();
   }
 
   return (
     <article className="max-w-4xl mx-auto py-8 px-4">
       <div className="prose dark:prose-invert max-w-none">
-        <h1>{post.frontmatter.title}</h1>
-        {post.frontmatter.date && (
+        <h1>{post.metadata.title}</h1>
+        {post.metadata.date && (
           <time className="text-gray-500">
-            {new Date(post.frontmatter.date).toLocaleDateString()}
+            {new Date(post.metadata.date).toLocaleDateString()}
           </time>
         )}
-        <MDXRemote source={post.content} />
+        {/* <MDXRemote source={post.content} options={config}/> */}
+        <post.content />
       </div>
     </article>
   )

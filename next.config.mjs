@@ -10,7 +10,8 @@ const withMDX = createMDX({
   options: {
     remarkPlugins: [
       ["remark-math", {}],
-      ["remark-gfm", {}]
+      ["remark-gfm", {}],
+      ["remark-smartypants", {dashes: true}]
     ],
     rehypePlugins: [
       ["rehype-prism-plus", {
