@@ -6,8 +6,8 @@ interface PostPropsAsync {
 }
 
 // Generate static params for all posts at build time
-export function generateStaticParams() {
-  const posts = getAllPosts()
+export async function generateStaticParams() {
+  const posts = await getAllPosts()
   return posts.map((post) => ({
     slug: post.slug,
   }))
