@@ -1,9 +1,5 @@
 import { getAllPosts } from '@/lib/mdx'
 import { notFound } from 'next/navigation'
-import { MDXRemote } from 'next-mdx-remote/rsc'
-import fs from 'fs'
-import path from 'path'
-import matter from 'gray-matter'
 
 interface PostPropsAsync {
     params: Promise<{slug: string}>
