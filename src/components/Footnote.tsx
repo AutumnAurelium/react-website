@@ -29,6 +29,14 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
   const [footnotes, setFootnotes] = React.useState<Map<string | number, React.ReactNode>>(new Map());
   const [counter, setCounter] = React.useState(1);
   const [pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
+  
+  // Use a ref to track the current counter value without causing re-renders
+  const counterRef = React.useRef(1);
+  
+  // Update the ref when counter state changes
+  React.useEffect(() => {
+    counterRef.current = counter;
+  }, [counter]);
 
   const registerFootnote = React.useCallback((index: string | number | undefined): string | number => {
     if (index !== undefined) {
@@ -37,11 +45,11 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Auto-increment for unspecified indexes
-    const newIndex = counter;
+    const newIndex = counterRef.current;
     setCounter(prev => prev + 1);
     setPendingFootnotes(prev => new Set(prev).add(newIndex));
     return newIndex;
-  }, [counter]);
+  }, []); // Empty dependency array - no longer depends on counter
 
   const addFootnoteContent = React.useCallback((index: string | number, content: React.ReactNode) => {
     setFootnotes(prev => {
@@ -74,10 +82,11 @@ export function Footnote({ index: propIndex }: FootnoteProps) {
   const { registerFootnote, footnotes } = React.useContext(FootnoteContext);
   const [index, setIndex] = React.useState<string | number | null>(null);
   
+  // Only register the footnote once on mount or when propIndex changes
   React.useEffect(() => {
     const assignedIndex = registerFootnote(propIndex);
     setIndex(assignedIndex);
-  }, [registerFootnote, propIndex]);
+  }, [propIndex, registerFootnote]);
 
   if (index === null) return null;
   
@@ -113,16 +122,25 @@ export function Footnote({ index: propIndex }: FootnoteProps) {
 // Footnote content component
 export function FootnoteContent({ 
   children, 
-  index 
+  index: propIndex 
 }: { 
   children: React.ReactNode; 
-  index: string | number;
+  index?: string | number;
 }) {
-  const { addFootnoteContent } = React.useContext(FootnoteContext);
+  const { registerFootnote, addFootnoteContent } = React.useContext(FootnoteContext);
+  const [index, setIndex] = React.useState<string | number | null>(null);
   
+  // Register the footnote content with auto-increment if needed
   React.useEffect(() => {
-    // Store the React node directly without converting to string
-    addFootnoteContent(index, children);
+    const assignedIndex = registerFootnote(propIndex);
+    setIndex(assignedIndex);
+  }, [propIndex, registerFootnote]);
+  
+  // Once we have an index, add the content
+  React.useEffect(() => {
+    if (index !== null) {
+      addFootnoteContent(index, children);
+    }
   }, [addFootnoteContent, children, index]);
   
   return null;

@@ -76,6 +76,8 @@ $$\frac{12}{4}$$
 ## Footnotes
 Here's a sentence with a footnote<Footnote index="A" />.
 
+Here's another <Footnote />.
+
 ```tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -159,4 +161,7 @@ export default function RootLayout({
 
 <FootnoteContent index="A">
 Hello, world. These are the footnote contents.
+</FootnoteContent>
+<FootnoteContent>
+Another footnote, this one automatic.
 </FootnoteContent>
