@@ -99,8 +99,10 @@ export function Footnote({ index: propIndex }: FootnoteProps) {
           </sup>
         </TooltipTrigger>
         {content && (
-          <TooltipContent>
-            <span className="text-sm">{typeof content === 'string' ? content : 'See footnote'}</span>
+          <TooltipContent side="top" className="max-w-sm">
+            <div className="text-sm prose prose-sm">
+              {content}
+            </div>
           </TooltipContent>
         )}
       </Tooltip>
