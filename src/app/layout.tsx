@@ -9,7 +9,7 @@ import Link from "next/link";
 import 'katex/dist/katex.min.css'
 import EmailLink from '@/components/EmailLink';
 import DiscordPopup from '@/components/DiscordPopup';
-import { FootnoteProvider, FootnoteContainer } from '@/components/FootnoteContainer';
+import { FootnoteProvider, FootnoteContainer } from '@/components/Footnote';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="darkreader-lock" content="true" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

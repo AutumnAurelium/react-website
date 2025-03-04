@@ -1,7 +1,7 @@
 export const metadata = {
     title: 'MDX Test'
 }
-import { Footnote } from '@/components/Footnote'
+import { Footnote, FootnoteContent } from '@/components/Footnote'
 
 # MDX Syntax Test Page
 ## Text Formatting
@@ -74,7 +74,7 @@ $$\frac{12}{4}$$
 ![Alt text](https://via.placeholder.com/150)
 
 ## Footnotes
-Here's a sentence with a footnote<Footnote index={1} content="This is the footnote content." />.
+Here's a sentence with a footnote<Footnote index="A" />.
 
 ```tsx
 import type { Metadata } from "next";
@@ -156,3 +156,7 @@ export default function RootLayout({
   );
 }
 ```
+
+<FootnoteContent index="a">
+Hello, world. These are the footnote contents.
+</FootnoteContent>
