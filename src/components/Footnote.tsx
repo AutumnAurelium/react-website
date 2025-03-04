@@ -8,12 +8,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-// Context definition
-interface FootnoteData {
-  content: React.ReactNode;
-  index: string | number;
-}
-
 export const FootnoteContext = React.createContext<{
   footnotes: Map<string | number, React.ReactNode>;
   registerFootnote: (index: string | number | undefined, contentId?: string) => string | number;
@@ -30,7 +24,7 @@ export const FootnoteContext = React.createContext<{
 export function FootnoteProvider({ children }: { children: React.ReactNode }) {
   const [footnotes, setFootnotes] = React.useState<Map<string | number, React.ReactNode>>(new Map());
   const [counter, setCounter] = React.useState(1);
-  const [pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
+  const [_, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
   const [registrationOrder, setRegistrationOrder] = React.useState<(string | number)[]>([]);
   
   // Map to track content IDs to prevent duplicate auto-indexed footnotes
