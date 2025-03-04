@@ -13,6 +13,11 @@ export async function getAllPosts() {
 
     const postModule = (await import(`../app/blog/posts/${slug}.mdx`));
 
+    // Skip posts that have hidden: true in their metadata
+    if (postModule.metadata.hidden === true) {
+      continue;
+    }
+
     posts.push({
       slug: slug,
       ...postModule.metadata,

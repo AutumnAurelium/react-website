@@ -6,6 +6,7 @@ interface Post {
   title?: string
   date?: string
   description?: string
+  hidden?: boolean
 }
 
 export const metadata = {
