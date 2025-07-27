@@ -33,7 +33,7 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
   const [footnotes, setFootnotes] = React.useState<Map<string | number, React.ReactNode>>(new Map());
   const [footnoteCounter, setFootnoteCounter] = React.useState(1);
   const [contentCounter, setContentCounter] = React.useState(1);
-  const [pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
+  const [_pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
   const [registrationOrder, setRegistrationOrder] = React.useState<(string | number)[]>([]);
   const [contentRegistrationOrder, setContentRegistrationOrder] = React.useState<(string | number)[]>([]);
   
@@ -316,7 +316,7 @@ export function FootnoteContent({
 
 // Footnote container component
 export function FootnoteContainer() {
-  const { footnotes, registrationOrder, contentRegistrationOrder } = React.useContext(FootnoteContext);
+  const { footnotes, contentRegistrationOrder } = React.useContext(FootnoteContext);
 
   if (footnotes.size === 0) return null;
 
