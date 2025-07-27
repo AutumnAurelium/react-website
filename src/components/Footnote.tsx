@@ -33,7 +33,6 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
   const [footnotes, setFootnotes] = React.useState<Map<string | number, React.ReactNode>>(new Map());
   const [footnoteCounter, setFootnoteCounter] = React.useState(1);
   const [contentCounter, setContentCounter] = React.useState(1);
-  const [_pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
   const [registrationOrder, setRegistrationOrder] = React.useState<(string | number)[]>([]);
   const [contentRegistrationOrder, setContentRegistrationOrder] = React.useState<(string | number)[]>([]);
   
@@ -55,7 +54,6 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
     setFootnotes(new Map());
     setFootnoteCounter(1);
     setContentCounter(1);
-    setPendingFootnotes(new Set());
     setRegistrationOrder([]);
     setContentRegistrationOrder([]);
     setAvailableIndices(new Set());
@@ -109,8 +107,6 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
         setRegistrationOrder(prev => prev.includes(index) ? prev : [...prev, index]);
       }
       
-      setPendingFootnotes(prev => new Set(prev).add(index));
-      
       // If we have a contentId, store the mapping
       if (contentId) {
         contentIdMapRef.current.set(contentId, index);
@@ -156,8 +152,6 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
       setFootnoteCounter(footnoteCounterRef.current);
     }
     
-    setPendingFootnotes(prev => new Set(prev).add(newIndex));
-    
     // For references, mark as available for pairing
     // For content, it's already paired (unusual case - content before reference)
     if (!isContent) {
@@ -184,13 +178,6 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
       const newMap = new Map(prev);
       newMap.set(index, content);
       return newMap;
-    });
-    
-    // Remove from pending once content is provided
-    setPendingFootnotes(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(index);
-      return newSet;
     });
     
     // Mark as a used pair since it now has content
