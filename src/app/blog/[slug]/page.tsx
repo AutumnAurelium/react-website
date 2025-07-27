@@ -48,16 +48,25 @@ export default async function Post({ params }: PostPropsAsync) {
     notFound();
   }
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      timeZone: 'UTC'
+    }).format(date);
+  };
+
   return (
     <article className="max-w-4xl mx-auto py-8 px-4">
       <div className="prose dark:prose-invert max-w-none">
         <h1>{post.metadata.title}</h1>
         {post.metadata.date && (
           <time className="text-gray-500">
-            {new Date(post.metadata.date).toLocaleDateString()}
+            {formatDate(post.metadata.date)}
           </time>
         )}
-        {/* <MDXRemote source={post.content} options={config}/> */}
         <post.content />
       </div>
     </article>

@@ -275,18 +275,33 @@ code[class*="language-"] {
   border: 2px solid var(--primary-transparent);
 }
 
+/* Images */
+.captioned-image-container > img {
+  margin-bottom: 0 !important;
+}
+figcaption > p {
+  margin-top: 0 !important;;
+}
+
 /* Blockquotes */
 blockquote {
   background: var(--background-dark);
   border-left: 4px solid var(--primary) !important;
   margin: var(--spacing-base) 0;
   padding: var(--spacing-base);
+  padding-top: calc(var(--spacing-base) * 0.05);
+  padding-bottom: calc(var(--spacing-base) * 0.05);
   border-radius: var(--radius);
   color: var(--foreground);
 }
 
 blockquote p {
   color: var(--foreground);
+  font-style: normal;
+}
+
+blockquote p::before {
+  display: none;
 }
 
 blockquote > blockquote {
@@ -299,6 +314,16 @@ blockquote > blockquote > blockquote {
   border-left: 4px solid var(--primary) !important;
   opacity: 0.6;
   margin-left: 0.5em;
+}
+
+svg {
+  color: var(--primary);
+}
+
+ul li {
+  list-style-type: "-";
+  position: relative;
+  padding-left: 1.5em;
 }
 
 /* Footnotes */

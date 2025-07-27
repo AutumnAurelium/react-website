@@ -1,0 +1,104 @@
+export const metadata = {
+    title: 'RLVR, The Plateau, and The Death of The API Model',
+    date: '2025-03-09',
+    description: "Claude, you're grounded.",
+    hidden: true
+};
+import { Footnote, FootnoteContent } from '@/components/Footnote';
+import ClaudeLogo from '@/svg/claude.svg';
+import TTCGraph from '@/img/test-time-compute-pink.png';
+import OpenAIOminous from '@/img/openai-ominous.png';
+import CaptionedImage from '@/components/CaptionedImage.tsx';
+
+If you talked to me at all near the tail end of 2024, you probably got an earful about Reinforcement Learning from Verifiable Rewards (RLVR). I was absolutely convinced that the context extension would emerge naturally from improving at verifiable tasks.
+
+Small base models demonstrated this behavior to a certain extent, and hill-climbed the basic tasks given to them, but overall failed to prove the thesis. My bespoke RLVR codebase was plagued by similar memory usage issues to other full-finetuning RL stacks at the time, and made scaling up to usably-large models unpleasant. My financial situation at the time did not make "brute-force the scaling" an attractive option, so the project fell by the wayside.
+
+A few months later, I was kicking myself every moment I wasn't celebrating. DeepSeek R1 proved that RLVR worked, and that it worked *really well*. A quality base model and a handful of math and programming problems could take you to the state of the art. It is no wonder that it hit the mainstream like a freight train.
+
+In the months since, a variety of tools, think-pieces, and demo runs have flooded the space. It has been proven at least a hundred times that RL can make Qwen 2.5 0.5B *very* good at GSM8K. As tools mature<Footnote/> and the novelty of "replications" wear off, we are confronted with a question:
+
+<FootnoteContent>
+My favorite of which is [willccbb/verifiers](https://github.com/willccbb/verifiers) - it makes the process a lot less painful and is the result of a lot of very important work.
+</FootnoteContent>
+
+## What is it we're verifying, anyway?
+
+In the fervor, I think the material impact of DeepSeek's findings have fallen a bit by the wayside. In my eyes, it breaks down like this:
+
+- **Sample Efficiency**: Measurable improvements can occur with only a few hundred examples.
+- **Generalization**: A model trained on verifiable tasks, like LeetCode, generalize that ability into less-verifiable downstream tasks, like software engineering.
+- **Hill-Climbing**: As long as the model can solve a problem some of the time, we can reinforce that until it solves it every time.
+
+From here, you can see what got so many insiders excited. It seems like we can make the model smarter just by giving it verifiable problems that challenge it, letting it hill-climb them, and then repeating that *ad infinitum* until the world is made of paperclips.
+
+Despite that, in the months following the release of o1, paperclip prices haven't moved an inch. o3 remains locked within OpenAI's model vault, beset by delays and flip-flopping following its multi-million-dollar benchmarking run. Anthropic, Google, and xAI now offer incremental improvements on the state of the art, and DeepSeek quietly churns on R2.
+
+What gives? I was promised paperclips.
+
+## The Plateau
+
+"The Plateau" is a concept best explained in [this Cathode Ray Dude video](https://www.youtube.com/watch?v=v8tjA8VyfvU). Desktop computers have become virtually perfect at the things most users want them to do. Chronic computer-touchers like you and I will always find a use for more processing power, be that in video games or writing ever-more-bloated software, but as hardware progress slows even these cycle-sinks slow in their growth.
+
+In recent months, I think we have reached The Plateau of the chat model. Sure, benchmarks will continue to be saturated as fast as you can make them, but vanishingly few users will find their work bottlenecked by theoretical capabilities.
+    
+<p className="text-red-600">This section is weak, revise later.</p>
+
+It hardly needs to be said, but humans are not chatbots. There are not very many people whose job it is to be asked a question, think about it for five minutes, and then give a final answer.
+
+People work on problems iteratively - making plans, completing sub-problems, evaluating different angles on the work. You slowly converge towards the right answer. Emulating this in LLMs is the dream of "test-time compute", and seemingly OpenAI's original vision for its series of reasoning models.
+
+## Test-Time Compute
+
+<CaptionedImage src={TTCGraph} alt="An image showing a log-linear plot between test-time compute on OpenAI o1 and its score on AIME.">
+I find the existence of the ticks on the unlabeled X axis fascinating.
+<a href="https://openai.com/index/learning-to-reason-with-llms/">[source]</a>
+</CaptionedImage>
+
+You might recognize the image above as the log-linear plot of "test-time compute" that was released alongside OpenAI o1. The precise meaning of "test-time compute" has been vague and changed without warning in OpenAI communications. For fun, here is a list of all of the different things that test-time compute has meant, to my knowledge:
+
+1. **Think harder**: Just force the model, by some means, to generate more tokens before its final answer.
+2. **Some kind of search**: OpenAI repeatedly mentions the concept of "search" in the original o1 release. Later comments about o1 being "just an LLM" make this confusing, but it's speculated that this is how o1-pro works.
+3. **Stochastic consensus**: For the o3 benchmarking run, hundreds of parallel rollouts were generated per problem and a single answer was picked by some consensus mechanism.
+
+All of these methods have their own problems. Context extension is great until you're completely saturating your context window with garbage every turn, search is plagued by inefficiency, and consensus is poorly suited to complex or long-horizon tasks.
+
+Why muddy the waters, here? What is the point of referring to three extremely disparate concepts with the same term? Surely if context extension, or search, or cons@infinity were log-linear forever, they wouldn't need to keep swapping them out. The reason that you and I aren't paperclips right now is that everything has diminishing returns, and there's no easy trick to solving everything.
+
+It's clear that, rather than any specific technology, "test-time compute" is something OpenAI wants to wishcast into existence. Anthropic, Google, and now xAI all vying for first place was bad enough, but frontier models being dropped on HuggingFace is an existential threat to them.
+
+<CaptionedImage src={OpenAIOminous} alt="OpenAI's ominous Super Bowl ad. A giant black dot rises over what looks like rows of crops, rendered in half-tone dots.">
+OpenAI's ominous black sun only swallows the Earth if "AGI" is a thing that 1) happens and 2) needs half a million GPUs.    
+</CaptionedImage>
+
+## Ten Times More Agency
+
+To many, "AI agents" seem like the natural successor to chatbots. People have been trying to make "agents" a thing for years, but recent improvements in model performance have only made them successful recently.
+
+Software engineering has predictably been subject to the most "disruption" by companies selling agentic solutions, be it AI code editors like Cursor and Windsurf or standalone SWE-in-a-box solutions like Devin, OpenHands, and Aider. They all encounter the same problem:
+
+<blockquote className="flex items-center align-center"> <ClaudeLogo height="6em" width="auto" className="flex items-start mr-5" /> Ah! I see the problem. Let's completely rewrite this section, as well as adding extraneous comments to this entire file and deleting your test code. This should solve the issue. Let me know if you need anything else! </blockquote>
+
+The agentic element of its post-training sometimes shines through in Claude 3.7 Sonnet, but at its heart it is still trained as a chatbot. Claude would clearly prefer to be generating entire programs out of thin air for you, rather than making minor edits to a single file or playing Pokémon. This is so deeply ingrained that Claude Code's spec-writing prompts tell it that it is writing specifications for human software engineers, rather than itself.
+
+Is this sustainable? Is the future for this industry really chatbots roleplaying as expert software development agents, talking amongst themselves? 
+
+# Veering Off Course
+
+Frontier labs have been pushing the concept of a universal model for years. OpenAI, Anthropic, etc. are fundamentally selling "AGI". A single model that could put every desk jockey in the world out of a job, and in the process hand a sizable fraction of the world's GDP to whoever happens to control the world's most valuable REST API.
+
+<p className="text-red-600">hell if i know how to bridge this</p>
+
+1. **Architectural Magic**: We're bound to crack infinite/linear/less-slow context one of these days. This seems to be DeepSeek's overall goal.
+    - **Pros**: Robust, the ideal solution to the problem.
+    - **Cons**: Product team sits around doing nothing all day.
+2. **Prompting Tricks**: With a long enough prompt, the model will surely be able to accurately compress 64K tokens of context into a few lines. This is what Claude Code does, as well as a legion of similar startups courtesy of venture capital.
+    - **Pros**: No GPUs are harmed.
+    - **Cons**: You get stuck in Mt. Moon for 4 days.
+3. **Vertical Integration**: Some ensemble of bespoke task-tuned models executing atomic tasks are exposed as a single, opaque service. This is what OpenAI Deep Research is.
+    - **Pros**: It actually works, and doesn't require a miracle.
+    - **Cons**: You have to have a second product, after the chat interface. This is terrifying.
+
+Option 1 is the best, of course, but I won't hold my breath for it. Option 2 is easy, but puts them at no advantage compared to GPT-wrappers.
+
+As such, frontier labs are increasingly thinking about Option 3.

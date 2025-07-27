@@ -1,0 +1,18 @@
+export const metadata = {
+    title: "RLVR / Open Source / What Now?",
+    date: "2025-04-09",
+    description: "Where do we go from here?",
+    hidden: true
+};
+
+If you talked to me in November 2024, you probably got an earful about Reinforcement Learning from Verifiable Rewards (RLVR). OpenAI o1 was the subject of constant speculation, and I had my pet theory like everyone else. I thought context extension was an inevitable side effect of only caring about outcome rewards, and that the model would output whatever babble was necessary to better reach the correct conclusion. I was hardly alone in this belief.
+
+Early experiments on small (\<1B) models hill-climbed their tasks well enough, but showed no sign of context extension. Having a minimal training budget and even less time, I found myself distracted hacking at efficiency improvements and better initializations for critic models.
+
+All this to say, I was kicking myself every moment I wasn't celebrating after DeepSeek R1 came out. RLVR over a smart base model with a small set of verifiable problems could produce a state-of-the-art model across many domains. It seemed perfect -- sample-efficient, broadly generalizing, flexible -- this was obviously the future.
+
+In the months since, we have proven beyond a shadow of a doubt that GRPO can make Qwen 2.5 0.5B *very* good at GSM8k. A few new open reasoners have come out, with varying levels of performance, but nothing earth-shattering. Other than that... crickets. What gives?
+
+## Nobody Goes There, It's Too Crowded
+
+Everyone wants to make a better generalist model. Failing that, everyone wants to make a better software engineering model. z

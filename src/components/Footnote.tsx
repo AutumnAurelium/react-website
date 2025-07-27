@@ -7,49 +7,109 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { usePathname } from 'next/navigation'
 
 export const FootnoteContext = React.createContext<{
   footnotes: Map<string | number, React.ReactNode>;
-  registerFootnote: (index: string | number | undefined, contentId?: string) => string | number;
+  registerFootnote: (index: string | number | undefined, contentId?: string, isContent?: boolean) => string | number;
   addFootnoteContent: (index: string | number, content: React.ReactNode) => void;
   registrationOrder: (string | number)[];
+  availableIndices: Set<string | number>; // Track indices that have been assigned but not yet paired
+  usedPairs: Set<string | number>; // Track indices that have been paired
+  contentRegistrationOrder: (string | number)[]; // Track registration order for content separately
 }>({
   footnotes: new Map(),
   registerFootnote: () => 1,
   addFootnoteContent: () => {},
   registrationOrder: [],
+  availableIndices: new Set(),
+  usedPairs: new Set(),
+  contentRegistrationOrder: [],
 });
 
 // Provider component
 export function FootnoteProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [footnotes, setFootnotes] = React.useState<Map<string | number, React.ReactNode>>(new Map());
-  const [counter, setCounter] = React.useState(1);
-  const [_, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
+  const [footnoteCounter, setFootnoteCounter] = React.useState(1);
+  const [contentCounter, setContentCounter] = React.useState(1);
+  const [pendingFootnotes, setPendingFootnotes] = React.useState<Set<string | number>>(new Set());
   const [registrationOrder, setRegistrationOrder] = React.useState<(string | number)[]>([]);
+  const [contentRegistrationOrder, setContentRegistrationOrder] = React.useState<(string | number)[]>([]);
+  
+  // Track available indices (assigned to a reference but not yet paired with content)
+  const [availableIndices, setAvailableIndices] = React.useState<Set<string | number>>(new Set());
+  
+  // Track indices that have been successfully paired
+  const [usedPairs, setUsedPairs] = React.useState<Set<string | number>>(new Set());
   
   // Map to track content IDs to prevent duplicate auto-indexed footnotes
   const contentIdMapRef = React.useRef<Map<string, string | number>>(new Map());
   
-  // Use a ref to track the current counter value without causing re-renders
-  const counterRef = React.useRef(1);
+  // Use refs to track the current counter values without causing re-renders
+  const footnoteCounterRef = React.useRef(1);
+  const contentCounterRef = React.useRef(1);
   
-  // Update the ref when counter state changes
+  // Reset all footnote state when pathname changes
   React.useEffect(() => {
-    counterRef.current = counter;
-  }, [counter]);
+    setFootnotes(new Map());
+    setFootnoteCounter(1);
+    setContentCounter(1);
+    setPendingFootnotes(new Set());
+    setRegistrationOrder([]);
+    setContentRegistrationOrder([]);
+    setAvailableIndices(new Set());
+    setUsedPairs(new Set());
+    contentIdMapRef.current = new Map();
+    footnoteCounterRef.current = 1;
+    contentCounterRef.current = 1;
+  }, [pathname]);
+  
+  // Update the refs when counter states change
+  React.useEffect(() => {
+    footnoteCounterRef.current = footnoteCounter;
+  }, [footnoteCounter]);
 
-  const registerFootnote = React.useCallback((index: string | number | undefined, contentId?: string): string | number => {
+  React.useEffect(() => {
+    contentCounterRef.current = contentCounter;
+  }, [contentCounter]);
+
+  const registerFootnote = React.useCallback((
+    index: string | number | undefined, 
+    contentId?: string,
+    isContent: boolean = false
+  ): string | number => {
     // If we have a contentId and it's already registered, return the existing index
     if (contentId && contentIdMapRef.current.has(contentId)) {
       const existingIndex = contentIdMapRef.current.get(contentId)!;
       return existingIndex;
     }
     
+    // If an explicit index was provided
     if (index !== undefined) {
-      setPendingFootnotes(prev => new Set(prev).add(index));
+      // Update tracking sets based on whether this is a reference or content
+      if (isContent) {
+        // This is content for an existing reference
+        if (availableIndices.has(index)) {
+          setAvailableIndices(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(index);
+            return newSet;
+          });
+          setUsedPairs(prev => new Set(prev).add(index));
+        }
+        
+        // Add to content registration order if not already present
+        setContentRegistrationOrder(prev => prev.includes(index) ? prev : [...prev, index]);
+      } else {
+        // This is a reference that might need content
+        setAvailableIndices(prev => new Set(prev).add(index));
+        
+        // Add to footnote registration order if not already present
+        setRegistrationOrder(prev => prev.includes(index) ? prev : [...prev, index]);
+      }
       
-      // Add to registration order if not already present
-      setRegistrationOrder(prev => prev.includes(index) ? prev : [...prev, index]);
+      setPendingFootnotes(prev => new Set(prev).add(index));
       
       // If we have a contentId, store the mapping
       if (contentId) {
@@ -59,13 +119,56 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
       return index;
     }
     
-    // Auto-increment for unspecified indexes
-    const newIndex = counterRef.current;
-    setCounter(prev => prev + 1);
+    // Auto-increment case - first check if we have available indices to pair with
+    if (isContent && availableIndices.size > 0) {
+      // Get the first available index for content
+      const nextIndex = Array.from(availableIndices)[0];
+      
+      // Remove from available and mark as used
+      setAvailableIndices(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(nextIndex);
+        return newSet;
+      });
+      setUsedPairs(prev => new Set(prev).add(nextIndex));
+      
+      // Add to content registration order
+      setContentRegistrationOrder(prev => prev.includes(nextIndex) ? prev : [...prev, nextIndex]);
+      
+      // If we have a contentId, store the mapping
+      if (contentId) {
+        contentIdMapRef.current.set(contentId, nextIndex);
+      }
+      
+      return nextIndex;
+    }
+    
+    // No available indices or this is a new reference - generate a new one
+    // Use the appropriate counter based on isContent
+    const newIndex = isContent ? contentCounterRef.current : footnoteCounterRef.current;
+    
+    // Immediately update the appropriate ref to prevent duplicate indices
+    if (isContent) {
+      contentCounterRef.current += 1;
+      setContentCounter(contentCounterRef.current);
+    } else {
+      footnoteCounterRef.current += 1;
+      setFootnoteCounter(footnoteCounterRef.current);
+    }
+    
     setPendingFootnotes(prev => new Set(prev).add(newIndex));
     
-    // Add to registration order if not already present
-    setRegistrationOrder(prev => prev.includes(newIndex) ? prev : [...prev, newIndex]);
+    // For references, mark as available for pairing
+    // For content, it's already paired (unusual case - content before reference)
+    if (!isContent) {
+      setAvailableIndices(prev => new Set(prev).add(newIndex));
+      // Add to footnote registration order
+      setRegistrationOrder(prev => [...prev, newIndex]);
+    } else {
+      setUsedPairs(prev => new Set(prev).add(newIndex));
+      // Add to content registration order
+      setContentRegistrationOrder(prev => [...prev, newIndex]);
+    }
     
     // If we have a contentId, store the mapping
     if (contentId) {
@@ -73,7 +176,8 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
     }
     
     return newIndex;
-  }, []); 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Remove availableIndices from dependencies to prevent recreation
 
   const addFootnoteContent = React.useCallback((index: string | number, content: React.ReactNode) => {
     setFootnotes(prev => {
@@ -88,6 +192,17 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
       newSet.delete(index);
       return newSet;
     });
+    
+    // Mark as a used pair since it now has content
+    setAvailableIndices(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
+    setUsedPairs(prev => new Set(prev).add(index));
+    
+    // Ensure it's in the content registration order
+    setContentRegistrationOrder(prev => prev.includes(index) ? prev : [...prev, index]);
   }, []);
 
   return (
@@ -95,7 +210,10 @@ export function FootnoteProvider({ children }: { children: React.ReactNode }) {
       footnotes, 
       registerFootnote, 
       addFootnoteContent, 
-      registrationOrder
+      registrationOrder,
+      availableIndices,
+      usedPairs,
+      contentRegistrationOrder
     }}>
       {children}
     </FootnoteContext.Provider>
@@ -114,12 +232,12 @@ export function Footnote({ index: propIndex, contentId }: FootnoteProps) {
   
   // Generate a stable contentId if none is provided
   const stableContentIdRef = React.useRef<string | undefined>(
-    contentId || (propIndex !== undefined ? `fn-${propIndex}` : undefined)
+    contentId || (propIndex !== undefined ? `fn-index-${propIndex}` : undefined)
   );
   
   // Only register the footnote once on mount or when propIndex changes
   React.useEffect(() => {
-    const assignedIndex = registerFootnote(propIndex, stableContentIdRef.current);
+    const assignedIndex = registerFootnote(propIndex, stableContentIdRef.current, false);
     setIndex(assignedIndex);
   }, [propIndex, registerFootnote]);
 
@@ -137,6 +255,7 @@ export function Footnote({ index: propIndex, contentId }: FootnoteProps) {
               href={`#fn-${index}`}
               id={`fnref-${index}`}
               className="text-primary hover:text-primary-light transition-colors"
+              data-content-id={stableContentIdRef.current}
             >
               {index}
             </a>
@@ -167,41 +286,52 @@ export function FootnoteContent({
   
   // Generate a stable contentId if none is provided
   const stableContentIdRef = React.useRef<string | undefined>(
-    propIndex !== undefined ? `fn-${propIndex}` : undefined
+    propIndex !== undefined ? `fn-index-${propIndex}` : undefined
   );
+  
+  // Store the initial children value in a ref to prevent re-adding on rerenders
+  const initialChildrenRef = React.useRef(children);
+  
+  // Store whether content has been added to prevent re-adding
+  const contentAddedRef = React.useRef(false);
   
   // Register the footnote content with auto-increment if needed
   React.useEffect(() => {
-    const assignedIndex = registerFootnote(propIndex, stableContentIdRef.current);
+    const assignedIndex = registerFootnote(propIndex, stableContentIdRef.current, true);
     setIndex(assignedIndex);
-  }, [propIndex, registerFootnote]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [propIndex]); // Remove registerFootnote from dependencies
   
   // Once we have an index, add the content
   React.useEffect(() => {
-    if (index !== null) {
-      addFootnoteContent(index, children);
+    if (index !== null && !contentAddedRef.current) {
+      addFootnoteContent(index, initialChildrenRef.current);
+      contentAddedRef.current = true; // Mark content as added to prevent re-adding
     }
-  }, [addFootnoteContent, children, index]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index]); // Remove addFootnoteContent from dependencies
   
   return null;
 }
 
 // Footnote container component
 export function FootnoteContainer() {
-  const { footnotes, registrationOrder } = React.useContext(FootnoteContext);
+  const { footnotes, registrationOrder, contentRegistrationOrder } = React.useContext(FootnoteContext);
 
   if (footnotes.size === 0) return null;
 
-  // Use registration order to determine display order
-  const footnotesArray = registrationOrder
+  // Use content registration order to determine display order since it tracks actual content
+  const footnotesArray = contentRegistrationOrder
     .filter(index => footnotes.has(index)) // Only include indices that have content
     .map(index => [index, footnotes.get(index)]);
+  
+  console.log(footnotesArray);
 
   return (
     <div className="footnotes mt-8 pt-8 border-t border-muted">
       <div className="space-y-3">
         {footnotesArray.map(([index, content]) => (
-          <div key={String(index)} id={`fn-${index}`} className="flex gap-2">
+          <div key={"content-" + String(index)} id={`fn-${index}`} className="flex gap-2">
             <div className="font-medium min-w-7 text-right">
               {index}.
             </div>

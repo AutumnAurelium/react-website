@@ -9,6 +9,25 @@ const nextConfig = {
   // Ensure static assets are handled correctly in all environments
   poweredByHeader: false,
   reactStrictMode: true,
+  webpack(config) {
+    config.module.rules.push({
+      test: /\.svg$/i,
+      use: ["@svgr/webpack"]
+    });
+
+    return config;
+  },
+
+  experimental: {
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js'
+        }
+      },
+    }
+  },
 }
 
 // We can't just import them and use that due to those not being serializable.
@@ -17,7 +36,7 @@ const withMDX = createMDX({
     remarkPlugins: [
       ["remark-math", {}],
       ["remark-gfm", {}],
-      ["remark-smartypants", {dashes: true}]
+      ["remark-smartypants", { dashes: true }]
     ],
     rehypePlugins: [
       ["rehype-prism-plus", {
@@ -28,5 +47,5 @@ const withMDX = createMDX({
     ]
   }
 })
- 
+
 export default withMDX(nextConfig) 
